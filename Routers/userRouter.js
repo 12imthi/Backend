@@ -1,17 +1,13 @@
-import express from "express";
-import { loginUser, registerUser} from "../Controllers/userController.js";
-// import { ,forgotPassword,resetPassword } from "../Controllers/userController.js";
-
+import express from 'express';
+import { registerUser, loginUser, getuser ,} from '../controllers/userController.js';
+import authMiddleware from '../Middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.post('/register-user',registerUser)
-router.post('/login-user',loginUser)
-// router.get('/home',getuser)
-
-// router.post('/forgot-password', forgotPassword);
-// router.post('/reset-password/:token', requestPasswordReset
-// );
-
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+// router.post('/forgot-password', requestPasswordReset); // Route for requesting a password reset
+// router.post('/reset-password', resetPassword); // Route for resetting the password
+router.get('/user', authMiddleware, getuser);
 
 export default router;

@@ -32,6 +32,16 @@ export const registerUser = async (req, res) => {
     }
 };
 
+const generateToken = (user) => {
+    const token = jwt.sign(
+        { _id: user._id, email: user.email }, // User data you want to include in the token
+        process.env.JWT_SECRET_KEY, // Your secret key
+        { expiresIn: '1h' } // Token expiration time
+    );
+    return token;
+};
+
+
 export const loginUser = async(req,res) => {
 
     try {
@@ -47,9 +57,11 @@ export const loginUser = async(req,res) => {
 
         //jwt part token creation after signin
 
-        const token = jwt.sign({},process.env.JWT_SECRET_KEY,{expiresIn:"1h"})
-        userDetails.token = token;
-        await userDetails.save();
+        // const token = jwt.sign({},process.env.JWT_SECRET_KEY,{expiresIn:"1h"})
+        // userDetails.token = token;
+        // await userDetails.save();
+
+        const token = generateToken(userDetails);
 
         res.status(200).json({message:"User login successfully",token: token})
         
@@ -107,13 +119,14 @@ export const loginUser = async(req,res) => {
 // };
 
 
-// export const getuser = async(req,res)=>{
-//     try {
-//       const userId = req.user._id
-//       const user = await User.findById(userId)
-//       res.status(200).json({message:"Authorized user",data:[user]})
-//     } catch (error) {
-//       console.log(error);
-//       res.status(500).json({ message: "Internal server error Failed to get the user" });
-//     }
-//   }
+export const getuser = async(req,res)=>{
+    try {
+      const userId = req.user._id
+      console.log(userId);
+      const user = await User.findById(userId)
+      res.status(200).json({message:"Authorized user",data:[user]})
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Internal server error Failed to get the user" });
+    }
+  }

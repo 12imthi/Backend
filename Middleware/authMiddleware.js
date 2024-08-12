@@ -4,25 +4,34 @@ import User from "../Models/userSchema.js"
 import dotenv from "dotenv";
 dotenv.config();
 
-const authMiddleware = async(req,res,next)=>{
-     //const token = req.header('Authorization')
-     const token = req.headers.authorization?.split(' ')[1]  /// bearer token
-     if(!token){
-        return res.status(401).json({message:"Token not found"})
-     }
-     try {
-        const decode = jwt.verify(token,process.env.JWT_SECRET_KEY)
-        req.user = decode
-        //console.log(req.user);
-        const user = await User.findById(req.user._id)
-       if(user.role != 'admin'){
-          return res.status(401).json({message:"Access Denied Not a valid user"})
-       }
-       next()
-     } catch (error) {
+const authMiddleware = async (req, res, next) => {
+    const token = req.header('Authorization');
+
+    if (!token) {
+        return res.status(401).json({ message: "Token not found" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+        req.user = decoded;
+
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(401).json({ message: "Access Denied: Not a valid user" });
+        }
+
+        next();
+    } catch (error) {
         console.log(error);
-        res.status(500).json({message:"Invalid Token Internal Server Error"})
-     }
-}
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ message: "Invalid Token" });
+        }
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ message: "Token has expired" });
+        }
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
 
 export default authMiddleware;
